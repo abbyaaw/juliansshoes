@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -238,6 +239,98 @@ router.post('/identify', async (req: Request, res: Response) => {
  */
 router.get('/status', (_req: Request, res: Response) => {
   res.json(scanProgress);
+});
+
+/**
+ * POST /api/scan/upload
+ * Upload one or more shoe photos. Saves to "Uploads" folder and adds to DB.
+ * Accepts multipart form data with field name "photos".
+ * Optional form fields: type, location, sub_location.
+ */
+const UPLOADS_FOLDER = 'Uploads';
+const uploadsDir = path.join(SHOE_IMAGES_DIR, UPLOADS_FOLDER);
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (_req, file, cb) => {
+    // Preserve original name but avoid collisions
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext);
+    const unique = `${base}-${Date.now()}${ext}`;
+    cb(null, unique);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (IMAGE_EXTENSIONS.has(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Unsupported file type: ${ext}`));
+    }
+  },
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB per file
+});
+
+router.post('/upload', upload.array('photos', 20), (req: Request, res: Response) => {
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      res.status(400).json({ error: 'No files uploaded' });
+      return;
+    }
+
+    const type = (req.body.type as string) || 'Boxless Shoes';
+    const location = (req.body.location as string) || 'Uploads';
+    const sub_location = (req.body.sub_location as string) || null;
+    const box_condition = type.toLowerCase().includes('boxless') ? 'Missing' : null;
+
+    const results: { filename: string; id: number }[] = [];
+    const errors: string[] = [];
+
+    for (const file of files) {
+      const relativePath = path.join(UPLOADS_FOLDER, file.filename);
+
+      if (shoeExistsByImagePath(relativePath)) {
+        errors.push(`${file.originalname}: already exists`);
+        continue;
+      }
+
+      try {
+        const result = insertShoe({
+          image_path: relativePath,
+          image_filename: file.originalname,
+          type,
+          location,
+          sub_location,
+          box_condition,
+        });
+        results.push({ filename: file.originalname, id: Number(result.lastInsertRowid) });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        errors.push(`${file.originalname}: ${msg}`);
+      }
+    }
+
+    res.json({
+      success: true,
+      uploaded: results.length,
+      shoe_ids: results.map((r) => r.id),
+      errors,
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
 });
 
 export default router;

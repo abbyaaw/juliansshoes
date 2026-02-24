@@ -111,6 +111,27 @@ export function startIdentify(
   return controller;
 }
 
+export async function uploadPhotos(
+  files: File[],
+  options?: { type?: string; location?: string; sub_location?: string }
+): Promise<{ uploaded: number; shoe_ids: number[]; errors: string[] }> {
+  const formData = new FormData();
+  files.forEach((f) => formData.append('photos', f));
+  if (options?.type) formData.append('type', options.type);
+  if (options?.location) formData.append('location', options.location);
+  if (options?.sub_location) formData.append('sub_location', options.sub_location);
+
+  const res = await fetch(`${API_BASE}/scan/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Upload failed ${res.status}: ${body}`);
+  }
+  return res.json();
+}
+
 export async function researchPrices(shoeId: number): Promise<{ message: string; sources: PriceSource[] }> {
   const data = await request<{ success: boolean; shoe: Shoe & { price_sources: PriceSource[] }; prices_found: number }>(`/research/${shoeId}`, { method: 'POST' });
   return { message: `Found ${data.prices_found} sources`, sources: data.shoe?.price_sources || [] };
