@@ -24,3 +24,9 @@
     @apply bg-gray-400;
   }
 }
+
+@layer utilities {
+  .transition-hover {
+    @apply transition-all duration-150 ease-in-out;
+  }
+}

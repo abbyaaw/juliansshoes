@@ -49,7 +49,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar — desktop only */}
-      <aside className="hidden md:flex w-64 flex-shrink-0 bg-white border-r border-gray-200 flex-col">
+      <aside className="hidden md:flex w-64 flex-shrink-0 bg-white shadow-sm flex-col">
         {/* Logo */}
         <div className="px-6 py-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold tracking-tight">
@@ -94,7 +94,7 @@ export default function Layout({ children }: LayoutProps) {
       </main>
 
       {/* Bottom nav — mobile only */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50">
         <div className="flex items-center justify-around h-16">
           {navItems.map((item) => (
             <NavLink

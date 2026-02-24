@@ -14,7 +14,7 @@ export default function CollectionStats({ stats }: CollectionStatsProps) {
 
   if (!stats) {
     return (
-      <div className="h-12 bg-white border border-gray-200 rounded-xl animate-pulse" />
+      <div className="h-12 bg-white shadow-sm rounded-xl animate-pulse" />
     );
   }
 
@@ -25,20 +25,20 @@ export default function CollectionStats({ stats }: CollectionStatsProps) {
   return (
     <div>
       {/* Compact summary bar */}
-      <div className="bg-white border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-between">
+      <div className="bg-white shadow-sm border border-gray-100 rounded-xl px-6 py-4 flex items-center justify-between">
         <div className="flex flex-wrap items-center gap-4 md:gap-6">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-gray-900">{stats.total_shoes}</span>
             <span className="text-sm text-gray-400">shoes</span>
           </div>
-          <div className="hidden md:block w-px h-6 bg-gray-200" />
+          <span className="hidden md:block text-gray-200">&middot;</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-emerald-600">
+            <span className="text-3xl font-bold text-emerald-600">
               {formatPrice(stats.total_value)}
             </span>
             <span className="text-sm text-gray-400">total value</span>
           </div>
-          <div className="hidden md:block w-px h-6 bg-gray-200" />
+          <span className="hidden md:block text-gray-200">&middot;</span>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             {typeEntries.map(([type, data]) => (
               <span key={type}>
@@ -68,7 +68,7 @@ export default function CollectionStats({ stats }: CollectionStatsProps) {
       {expanded && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
           {/* By Brand */}
-          <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-4">
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
               By Brand
             </p>
@@ -88,7 +88,7 @@ export default function CollectionStats({ stats }: CollectionStatsProps) {
           </div>
 
           {/* By Type */}
-          <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-4">
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
               By Type
             </p>
@@ -114,7 +114,7 @@ export default function CollectionStats({ stats }: CollectionStatsProps) {
           </div>
 
           {/* By Location */}
-          <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-4">
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
               By Location
             </p>
