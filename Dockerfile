@@ -10,7 +10,7 @@ COPY server/package.json server/
 # Install all dependencies (including dev for building)
 RUN npm install
 
-# Copy source
+# Copy everything (source + seed data)
 COPY . .
 
 # Build the client
@@ -26,4 +26,4 @@ ENV SHOE_IMAGES_DIR=/data/images
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["sh", "/app/start.sh"]

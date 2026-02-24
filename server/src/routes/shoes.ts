@@ -1,4 +1,7 @@
 import { Router, Request, Response } from 'express';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 import {
   getAllShoes,
   getShoeById,
@@ -7,6 +10,9 @@ import {
   deleteShoe,
   getCollectionStats,
 } from '../db.js';
+
+const SHOE_IMAGES_DIR = process.env.SHOE_IMAGES_DIR || "/Users/abigailwalton/Julian's Shoes";
+const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 const router = Router();
 
@@ -127,6 +133,35 @@ router.delete('/:id', (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error deleting shoe:', error);
     res.status(500).json({ error: 'Failed to delete shoe' });
+  }
+});
+
+/**
+ * POST /api/shoes/:id/image
+ * Upload an image for an existing shoe. Saves to the shoe's image_path.
+ */
+router.post('/:id/image', imageUpload.single('image'), (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) { res.status(400).json({ error: 'Invalid shoe ID' }); return; }
+
+    const shoe = getShoeById(id) as Record<string, unknown> | undefined;
+    if (!shoe) { res.status(404).json({ error: 'Shoe not found' }); return; }
+
+    const file = req.file;
+    if (!file) { res.status(400).json({ error: 'No image file' }); return; }
+
+    const imagePath = shoe.image_path as string;
+    const fullPath = path.join(SHOE_IMAGES_DIR, imagePath);
+
+    // Ensure directory exists
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, file.buffer);
+
+    res.json({ success: true, path: imagePath });
+  } catch (error) {
+    console.error('Error uploading shoe image:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
   }
 });
 
